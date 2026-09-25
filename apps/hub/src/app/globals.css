@@ -1,0 +1,52 @@
+@import "@rn/brand/brand.css";
+
+/* Hub Grid Layouts */
+.hub-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .hub-metric-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .hub-metric-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .hub-metric-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+.hub-layout-columns {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .hub-layout-columns {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+/* SLA Radar card animation */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(0, 82, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
+  }
+}
+
+.sla-urgent-pulse {
+  animation: pulseGlow 2s infinite ease-in-out;
+}

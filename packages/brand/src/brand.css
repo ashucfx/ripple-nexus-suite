@@ -1,0 +1,301 @@
+@import "./tokens.css";
+
+/* Base Reset & Box Sizing */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  color-scheme: dark;
+  background-color: var(--nexus-obsidian);
+  color: var(--nexus-white);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--nexus-obsidian);
+  color: var(--nexus-white);
+  overflow-x: hidden;
+}
+
+/* Monospace Telemetry Typography */
+.font-mono,
+code,
+pre,
+kbd,
+samp {
+  font-family: var(--font-mono);
+}
+
+.font-telemetry {
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Background Grids & Radial Accents */
+.bg-telemetry-grid {
+  background-image: 
+    linear-gradient(to right, rgba(31, 38, 51, 0.5) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(31, 38, 51, 0.5) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: center center;
+}
+
+.bg-radial-cobalt {
+  background: radial-gradient(circle 600px at 50% 10%, rgba(0, 82, 255, 0.12), transparent 70%);
+}
+
+.bg-radial-cyan {
+  background: radial-gradient(circle 500px at 80% 20%, rgba(0, 210, 255, 0.08), transparent 70%);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--nexus-obsidian);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--nexus-border);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--nexus-cobalt);
+}
+
+/* Focus States */
+:focus-visible {
+  outline: 2px solid var(--nexus-cobalt);
+  outline-offset: 2px;
+}
+
+/* Utility Containers */
+.rn-container {
+  width: 100%;
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .rn-container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Card System */
+.rn-card {
+  background: var(--nexus-carbon);
+  border: 1px solid var(--nexus-border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.rn-card:hover {
+  border-color: var(--nexus-border-light);
+}
+
+.rn-card-elevated {
+  background: var(--nexus-surface3);
+  border: 1px solid var(--nexus-border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+}
+
+.rn-card-interactive {
+  cursor: pointer;
+}
+
+.rn-card-interactive:hover {
+  border-color: var(--nexus-cobalt);
+  box-shadow: 0 0 16px var(--nexus-cobalt-glow);
+}
+
+/* Button System */
+.rn-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.rn-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rn-btn-primary {
+  background: var(--nexus-cobalt);
+  color: var(--nexus-white);
+  border-color: var(--nexus-cobalt);
+}
+
+.rn-btn-primary:hover:not(:disabled) {
+  background: var(--nexus-cobalt-hover);
+  box-shadow: 0 0 16px var(--nexus-cobalt-glow);
+}
+
+.rn-btn-secondary {
+  background: var(--nexus-carbon);
+  color: var(--nexus-white);
+  border-color: var(--nexus-border);
+}
+
+.rn-btn-secondary:hover:not(:disabled) {
+  border-color: var(--nexus-border-light);
+  background: var(--nexus-surface3);
+}
+
+.rn-btn-ghost {
+  background: transparent;
+  color: var(--nexus-slate);
+  border-color: transparent;
+}
+
+.rn-btn-ghost:hover:not(:disabled) {
+  color: var(--nexus-white);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Badge System */
+.rn-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--nexus-border);
+  background: var(--nexus-surface3);
+  color: var(--nexus-slate);
+}
+
+.rn-badge-cobalt {
+  background: rgba(0, 82, 255, 0.12);
+  border-color: rgba(0, 82, 255, 0.3);
+  color: var(--nexus-cyan);
+}
+
+.rn-badge-live {
+  background: rgba(0, 210, 255, 0.1);
+  border-color: rgba(0, 210, 255, 0.35);
+  color: var(--nexus-cyan);
+}
+
+.rn-badge-nominal {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: var(--status-nominal);
+}
+
+.rn-badge-warn {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: var(--status-warn);
+}
+
+.rn-badge-critical {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: var(--status-critical);
+}
+
+/* Telemetry Table System */
+.rn-table-container {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--nexus-border);
+  border-radius: var(--radius-md);
+  background: var(--nexus-carbon);
+}
+
+.rn-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.rn-table th {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--nexus-slate);
+  background: var(--nexus-surface3);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--nexus-border);
+  white-space: nowrap;
+}
+
+.rn-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--nexus-border);
+  color: var(--nexus-white);
+}
+
+.rn-table tbody tr {
+  transition: background-color var(--transition-fast);
+}
+
+.rn-table tbody tr:hover {
+  background: var(--nexus-surface3);
+}
+
+.rn-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Form Controls */
+.rn-input {
+  width: 100%;
+  background: var(--nexus-surface3);
+  border: 1px solid var(--nexus-border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  color: var(--nexus-white);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  transition: border-color var(--transition-fast);
+}
+
+.rn-input:focus {
+  outline: none;
+  border-color: var(--nexus-cobalt);
+}
+
+.rn-input::placeholder {
+  color: var(--nexus-slate-dark);
+}

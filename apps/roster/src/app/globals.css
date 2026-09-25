@@ -1,0 +1,22 @@
+@import '@rn/brand/brand.css';
+
+:root {
+  --color-roster-squad: #0052FF;
+  --color-roster-oncall: #00E599;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--nexus-obsidian, #0A0D12);
+  color: var(--nexus-white, #FFFFFF);
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Responsive Table Scroll Container */
+.roster-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}

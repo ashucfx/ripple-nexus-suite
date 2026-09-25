@@ -1,20 +1,22 @@
 {
-  "name": "@rn/hub",
+  "name": "@rn/auth",
   "version": "0.1.0",
   "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
-    "dev": "next dev -p 3000",
-    "build": "next build",
-    "start": "next start -p 3000",
     "typecheck": "tsc --noEmit",
-    "lint": "echo hub lint ok"
+    "lint": "echo auth lint ok",
+    "build": "echo auth build ok"
   },
   "dependencies": {
-    "@rn/auth": "*",
-    "@rn/brand": "*",
     "@rn/db": "*",
-    "lucide-react": "^1.16.0",
-    "next": "^15.1.0",
+    "@supabase/supabase-js": "^2.48.1"
+  },
+  "peerDependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

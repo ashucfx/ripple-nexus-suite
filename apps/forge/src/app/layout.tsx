@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
+import { AuthProvider } from '@rn/auth';
 import './globals.css';
 
 const inter = Inter({
@@ -15,8 +16,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'RIPPLE NEXUS // Operations Hub',
-  description: 'Executive Command & SLA Radar Matrix for Ripple Nexus Operations Suite',
+  title: 'RIPPLE NEXUS // Forge Engineering & Deployment',
+  description: 'Autonomous Systems Delivery & Pipeline Matrix for Ripple Nexus',
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
@@ -33,8 +34,6 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
 };
-
-import { AuthProvider } from '@rn/auth';
 
 export default function RootLayout({
   children,

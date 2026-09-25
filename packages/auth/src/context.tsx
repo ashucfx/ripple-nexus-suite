@@ -18,35 +18,38 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [session, setSession] = useState<UserSession | null>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('rn_enclave_session');
-      if (stored) {
-        try {
-          return JSON.parse(stored);
-        } catch {
-          // invalid stored session
-        }
-      }
-    }
-    // Default active session for initial deployment
-    return {
-      userId: 'usr-admin-master',
-      email: 'alex@theripplenexus.com',
-      name: 'Executive Architect',
-      role: 'executive_admin',
-      mfaVerified: true,
-      authenticatedAt: new Date().toISOString(),
-    };
-  });
+  const [session, setSession] = useState<UserSession | null>(null);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    if (session && typeof window !== 'undefined') {
-      localStorage.setItem('rn_enclave_session', JSON.stringify(session));
-    } else if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined') {
+      // Clear any legacy auto-login sessions
       localStorage.removeItem('rn_enclave_session');
+
+      const stored = sessionStorage.getItem('rn_enclave_session');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (parsed && parsed.mfaVerified && parsed.userId) {
+            setSession(parsed);
+          }
+        } catch {
+          sessionStorage.removeItem('rn_enclave_session');
+        }
+      }
+      setHydrated(true);
     }
-  }, [session]);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && hydrated) {
+      if (session && session.mfaVerified) {
+        sessionStorage.setItem('rn_enclave_session', JSON.stringify(session));
+      } else {
+        sessionStorage.removeItem('rn_enclave_session');
+      }
+    }
+  }, [session, hydrated]);
 
   const login = async (email: string, role: UserRole = 'executive_admin', clientId?: string) => {
     const newSession: UserSession = {
@@ -87,12 +90,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return hasPermission(session.role, permission);
   };
 
+  if (!hydrated) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          backgroundColor: '#0A0D12',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontFamily: 'monospace',
+          color: '#00D2FF',
+          letterSpacing: '0.12em',
+          fontSize: '0.8125rem',
+        }}
+      >
+        CITADEL ENCLAVE INITIALIZING...
+      </div>
+    );
+  }
+
   return (
     <AuthContext.Provider
       value={{
         session,
         role: session?.role || 'client_contractor',
-        isAuthenticated: !!session && session.mfaVerified,
+        isAuthenticated: !!session && !!session.mfaVerified,
         login,
         logout,
         switchRole,
@@ -619,5 +642,73 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
     );
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      {/* Citadel Session & Enclave Security Dock */}
+      <aside
+        aria-label="Citadel Session Security Dock"
+        style={{
+          position: 'fixed',
+          bottom: '16px',
+          right: '16px',
+          zIndex: 9999,
+          backgroundColor: 'rgba(20, 25, 35, 0.94)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          border: '1px solid #1F2633',
+          borderRadius: '6px',
+          padding: '8px 14px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          boxShadow: '0 8px 30px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 82, 255, 0.1)',
+          fontFamily: 'var(--font-mono, monospace)',
+          fontSize: '0.6875rem',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span
+            style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              backgroundColor: '#00E599',
+              boxShadow: '0 0 8px #00E599',
+            }}
+          />
+          <span style={{ color: '#8A99AD' }}>CITADEL MFA:</span>
+          <span style={{ color: '#FFFFFF', fontWeight: 700 }}>2FA OTP ACTIVE</span>
+        </div>
+        <div style={{ color: '#1F2633' }}>|</div>
+        <div>
+          <span style={{ color: '#8A99AD' }}>ENCLAVE:</span>{' '}
+          <span style={{ color: '#00D2FF', fontWeight: 700 }}>{session.role.toUpperCase()}</span>
+          {session.clientId && (
+            <span style={{ color: '#8A99AD', marginLeft: '4px' }}>({session.clientId})</span>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={logout}
+          title="Instantly locks the session and requires 6-digit OTP verification to re-enter"
+          style={{
+            backgroundColor: 'rgba(239, 68, 68, 0.15)',
+            border: '1px solid rgba(239, 68, 68, 0.4)',
+            color: '#EF4444',
+            padding: '4px 10px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '0.625rem',
+            fontWeight: 700,
+            fontFamily: 'var(--font-mono, monospace)',
+            letterSpacing: '0.05em',
+            transition: 'all 150ms ease',
+          }}
+        >
+          LOCK SESSION
+        </button>
+      </aside>
+    </>
+  );
 };

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { TopNav, TelemetryMetric, Button } from '@rn/brand';
 import { getSupabaseClient, Brief } from '@rn/db';
+import { useAuth, AuthGuard, filterByTenantBoundary, UserRole } from '@rn/auth';
 import { SLARadar } from '../components/SLARadar';
 import { PipelineMatrix } from '../components/PipelineMatrix';
 import { SystemTelemetryPanel } from '../components/SystemTelemetryPanel';
@@ -10,6 +11,7 @@ import { QuickIntakeModal } from '../components/QuickIntakeModal';
 import { AuditTrailStream } from '../components/AuditTrailStream';
 
 export default function HubPage() {
+  const { session, role, switchRole } = useAuth();
   const [activeTab, setActiveTab] = useState<'overview' | 'radar' | 'pipeline' | 'telemetry'>('overview');
   const [briefs, setBriefs] = useState<Brief[]>([]);
 
@@ -56,9 +58,10 @@ export default function HubPage() {
     }
   };
 
-  const criticalCount = briefs.filter((b) => b.priority === 'p0_critical').length;
-  const inFlightCount = briefs.filter((b) => b.status === 'in_progress').length;
-  const totalBudget = briefs.reduce((acc, curr) => acc + (curr.budget || 0), 0);
+  const visibleBriefs = filterByTenantBoundary(briefs, session);
+  const criticalCount = visibleBriefs.filter((b) => b.priority === 'p0_critical').length;
+  const inFlightCount = visibleBriefs.filter((b) => b.status === 'in_progress').length;
+  const totalBudget = visibleBriefs.reduce((acc, curr) => acc + (curr.budget || 0), 0);
 
   const navItems = [
     { label: 'OVERVIEW', href: '#overview', active: activeTab === 'overview' },
@@ -68,94 +71,113 @@ export default function HubPage() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <TopNav
-        currentApp="hub"
-        navItems={navItems}
-        rightAction={
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setIntakeModalOpen(true)}
-          >
-            + INTAKE
-          </Button>
-        }
-      />
-
-      <main className="rn-container" style={{ flex: 1, paddingTop: '1.5rem', paddingBottom: '3rem' }}>
-        {/* Header Title & Subtitle */}
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '1rem',
-            marginBottom: '1.5rem',
-          }}
-        >
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.75rem',
-                  letterSpacing: '0.12em',
-                  color: 'var(--nexus-cyan)',
-                  textTransform: 'uppercase',
-                }}
-              >
-                // RIPPLE NEXUS OPERATIONS
-              </span>
-              <span style={{ color: 'var(--nexus-border)' }}>•</span>
-              <span
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '0.6875rem',
-                  color: supabaseConnected ? 'var(--status-nominal)' : 'var(--nexus-slate)',
-                }}
-              >
-                {supabaseConnected ? 'SUPABASE CLOUD ACTIVE' : 'LOCAL CLUSTER MODE'}
-              </span>
-            </div>
-            <h1
-              style={{
-                fontFamily: 'var(--font-sans)',
-                fontSize: '1.875rem',
-                fontWeight: 800,
-                letterSpacing: '-0.02em',
-                color: '#FFFFFF',
-                marginTop: '0.25rem',
-              }}
-            >
-              Executive Command &amp; Radar
-            </h1>
-          </div>
-
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setActiveTab('overview')}
-            >
-              FULL MATRIX
-            </Button>
+    <AuthGuard requiredApp="hub">
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <TopNav
+          currentApp="hub"
+          navItems={navItems}
+          rightAction={
             <Button
               variant="primary"
               size="sm"
               onClick={() => setIntakeModalOpen(true)}
             >
-              + NEW BRIEF
+              + INTAKE
             </Button>
+          }
+        />
+
+        <main className="rn-container" style={{ flex: 1, paddingTop: '1.5rem', paddingBottom: '3rem' }}>
+          {/* Header Title & Subtitle */}
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1rem',
+              marginBottom: '1.5rem',
+            }}
+          >
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.75rem',
+                    letterSpacing: '0.12em',
+                    color: 'var(--nexus-cyan)',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  // RIPPLE NEXUS OPERATIONS
+                </span>
+                <span style={{ color: 'var(--nexus-border)' }}>•</span>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.6875rem',
+                    color: supabaseConnected ? 'var(--status-nominal)' : 'var(--nexus-slate)',
+                  }}
+                >
+                  {supabaseConnected ? 'SUPABASE CLOUD ACTIVE' : 'LOCAL CLUSTER MODE'}
+                </span>
+                <span style={{ color: 'var(--nexus-border)' }}>•</span>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span style={{ fontSize: '0.625rem', fontFamily: 'var(--font-mono)', color: 'var(--nexus-slate)' }}>
+                    CLEARANCE:
+                  </span>
+                  <select
+                    value={role}
+                    onChange={(e) => switchRole(e.target.value as UserRole)}
+                    className="rn-input"
+                    style={{ width: 'auto', padding: '0.15rem 0.4rem', fontSize: '0.625rem', fontFamily: 'var(--font-mono)' }}
+                  >
+                    <option value="executive_admin">EXECUTIVE ADMIN</option>
+                    <option value="systems_architect">SYSTEMS ARCHITECT</option>
+                    <option value="operations_lead">OPERATIONS LEAD</option>
+                    <option value="client_contractor">CLIENT CONTRACTOR [HELIOS-AI]</option>
+                    <option value="auditor">AUDITOR</option>
+                  </select>
+                </div>
+              </div>
+              <h1
+                style={{
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '1.875rem',
+                  fontWeight: 800,
+                  letterSpacing: '-0.02em',
+                  color: '#FFFFFF',
+                  marginTop: '0.25rem',
+                }}
+              >
+                Executive Command &amp; Radar
+              </h1>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setActiveTab('overview')}
+              >
+                FULL MATRIX
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIntakeModalOpen(true)}
+              >
+                + NEW BRIEF
+              </Button>
+            </div>
           </div>
-        </div>
 
         {/* Executive Metrics Bar (Responsive 1 to 6 columns) */}
         <div className="hub-metric-grid" style={{ marginBottom: '1.5rem' }}>
           <TelemetryMetric
             label="ACTIVE BRIEFS"
-            value={briefs.length}
+            value={visibleBriefs.length}
             subValue="+2 this week"
             trend="up"
             statusColor="var(--nexus-cobalt)"
@@ -201,9 +223,9 @@ export default function HubPage() {
         <div className="hub-layout-columns">
           {/* Left Column: SLA Radar + Pipeline Matrix */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <SLARadar briefs={briefs} />
+            <SLARadar briefs={visibleBriefs} />
             <PipelineMatrix
-              briefs={briefs}
+              briefs={visibleBriefs}
               onOpenIntake={() => setIntakeModalOpen(true)}
             />
           </div>
@@ -223,5 +245,6 @@ export default function HubPage() {
         onSubmit={handleCreateBrief}
       />
     </div>
+  </AuthGuard>
   );
 }

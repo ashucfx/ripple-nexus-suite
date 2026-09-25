@@ -1,0 +1,32 @@
+@import "@rn/brand/brand.css";
+
+/* Atlas Client Matrix Layouts */
+.atlas-client-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .atlas-client-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .atlas-client-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.atlas-layout-columns {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .atlas-layout-columns {
+    grid-template-columns: 2fr 1fr;
+  }
+}

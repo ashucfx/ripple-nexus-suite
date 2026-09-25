@@ -44,3 +44,7 @@ yarn-error.log*
 
 # Vercel
 .vercel
+
+# Local Documentation & Scripts (Never Push)
+*.pdf
+scripts/

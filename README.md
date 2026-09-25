@@ -1,72 +1,96 @@
-<div align="center">
+# 🔷 Ripple Nexus Operations Suite
 
-# RIPPLE NEXUS // CORE PLATFORM
+> "High-integrity systems architecture and mission-critical AI operations."
+> *Zero-Trust Operations Platform Orchestrating 6 Mission-Critical Subnets*
 
-[![Stack](https://img.shields.io/badge/ORCHESTRATION-TURBOREPO-000000?style=for-the-badge&logoColor=00E599&labelColor=0A0D12&color=00E599)](https://turbo.build/)
-[![Framework](https://img.shields.io/badge/FRAMEWORK-NEXT.JS_15-000000?style=for-the-badge&logoColor=00E599&labelColor=0A0D12&color=00E599)](https://nextjs.org/)
-[![UI](https://img.shields.io/badge/RUNTIME-REACT_19-000000?style=for-the-badge&logoColor=00E599&labelColor=0A0D12&color=00E599)](https://react.dev/)
-[![Language](https://img.shields.io/badge/LANGUAGE-TYPESCRIPT_5-000000?style=for-the-badge&logoColor=00E599&labelColor=0A0D12&color=00E599)](https://www.typescriptlang.org/)
-[![Security](https://img.shields.io/badge/SECURITY-2FA_OTP_ENCLAVE-000000?style=for-the-badge&logoColor=00E599&labelColor=0A0D12&color=00E599)](#security-architecture)
-
-```
-========================================================================================
-  [●] RIPPLE NEXUS ENTERPRISE OPERATIONS RUNTIME // ZERO-TRUST CLOUD ENCLAVE
-========================================================================================
-```
-
-</div>
+[![CI/CD](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen)](https://github.com/ashucfx/ripple-nexus-suite/actions) [![Turborepo](https://img.shields.io/badge/Turborepo-v2.11.4-blue)](https://turbo.build/) [![Next.js](https://img.shields.io/badge/Next.js-v15.2.0-black)](https://nextjs.org/) [![React](https://img.shields.io/badge/React-v19.0.0-blue)](https://react.dev/) [![TypeScript](https://img.shields.io/badge/TypeScript-Strict%20v5.7-blue)](https://www.typescriptlang.org/) [![Auth Enclave](https://img.shields.io/badge/Auth-Citadel%202FA%20%2F%20OTP-brightgreen)](#) [![Compliance](https://img.shields.io/badge/Compliance-FIPS%20140--3%20%7C%20SOC--2-brightgreen)](#)
 
 ---
 
-### Engineering Stack Architecture
+## 1. Architectural Overview: The 6-App Topology
 
-| Subsystem | Technology Base | Specification / Version | Cluster Target | Status |
-| :--- | :--- | :--- | :--- | :--- |
-| **Monorepo Engine** | Turborepo | `v2.11.4` (Workspaces Engine) | Monorepo Root | `STABLE` |
-| **Frontend Runtime** | Next.js App Router | `v15.2.0` (Turbopack Powered) | Multi-Cluster Subnets | `NOMINAL` |
-| **Component Core** | React | `v19.0.0` (Server Components) | Global Design System | `NOMINAL` |
-| **Type Safety** | TypeScript | `v5.7.0` (Strict Null / Zero-Any) | All Packages & Apps | `VERIFIED` |
-| **Identity & MFA** | Supabase Auth + TOTP | 6-Digit Cryptographic OTP Gate | Edge Subnets | `ENFORCED` |
-| **Design System** | `@rn/brand` | Proprietary HSL Tokens & SVGs | Distributed CDN | `OPTIMAL` |
+The **Ripple Nexus Operations Suite** is an enterprise operations platform architected as a high-performance Turborepo monorepo. It orchestrates 6 mission-critical subnets designed for operational command, engineering delivery, client intelligence, institutional billing, cryptographic security, and squad scheduling.
 
----
+Every subnet enforces strict **Zero-Trust Role-Based Access Control (RBAC)** and multi-factor identity verification via the centralized **Citadel Authentication & 6-Digit OTP Gate**.
 
-### Platform Capability Matrix
-
-```bash
-[01] OPERATIONS COMMAND    --> Real-time telemetry, SLA monitors, incident dispatch
-[02] ENGINEERING DEPLOY    --> Rolling CI/CD pipeline triggers & cluster matrix
-[03] CLIENT INTELLIGENCE   --> Relationship scoring, contractual SLA verification
-[04] FISCAL ARCHITECTURE   --> Institutional escrow & multi-currency billing
-[05] HARDWARE ENCLAVE      --> Zero-trust secrets engine & HSM key lifecycle
-[06] SQUAD CAPACITY        --> Engineer allocation, velocity & on-call rotations
+```
+                           +-------------------------------------+
+                           |   CITADEL MFA & 6-DIGIT OTP GATE    |
+                           +------------------+------------------+
+                                              |
+      +--------------------+------------------+------------------+--------------------+
+      |                    |                  |                  |                    |
++-----+------+       +-----+------+     +-----+------+     +-----+------+       +-----+------+
+|  APP 01    |       |  APP 02    |     |  APP 03    |     |  APP 04    |       |  APP 05    |
+|   HUB      |       |  FORGE     |     |  ATLAS     |     |  LEDGER    |       |  VAULT     |
+| (Port 3000)|       | (Port 3001)|     | (Port 3002)|     | (Port 3003)|       | (Port 3004)|
+| Operations |       | CI/CD &    |     | CRM & Client|    | Billing &  |       | HSM Secrets|
+| SLA Radar  |       | Deploy     |     | Intelligence|    | Cashflow   |       | & Enclave  |
++------------+       +------------+     +------------+     +------------+       +-----+------+
+                                                                                      |
+                                                                                +-----+------+
+                                                                                |  APP 06    |
+                                                                                |  ROSTER    |
+                                                                                | (Port 3005)|
+                                                                                | Squad &    |
+                                                                                | Capacity   |
+                                                                                +------------+
 ```
 
 ---
 
-### Security Architecture
+## 2. Core Subnet Directory & Operational Ports
 
-```
-+-------------------------------------------------------------------------------+
-|                       CITADEL ACCESS VERIFICATION GATE                        |
-|                                                                               |
-|  [REQUEST] ---> [CORPORATE EMAIL] ---> [6-DIGIT OTP] ---> [SESSION ENCLAVE]  |
-|                                                                               |
-|  - Role-Based Access Control (RBAC): Strict Multi-Tier Enforcement            |
-|  - Tenant Boundary Isolation: Complete Client Contractor Data Partitioning    |
-|  - Hardware Security: FIPS 140-3 Cryptographic Integrity Standards           |
-+-------------------------------------------------------------------------------+
-```
+| # | Subnet | Port | Subdomain | Scope Privilege | Primary Operational Function |
+| :---: | :--- | :---: | :--- | :--- | :--- |
+| **01** | **Hub** | `3000` | `hub.theripplenexus.com` | `operations:read` | Operations Command, SLA Radar & Rapid Brief Intake |
+| **02** | **Forge** | `3001` | `forge.theripplenexus.com` | `pipeline:read` | 4-Stage Kanban Matrix & Rolling Deployment Pipelines |
+| **03** | **Atlas** | `3002` | `atlas.theripplenexus.com` | `clients:read` | Institutional Accounts, MRR Radar & Relationship Scoring |
+| **04** | **Ledger** | `3003` | `ledger.theripplenexus.com` | `financial:read` | Multi-Currency Invoicing, Escrow & Liquidity Radar |
+| **05** | **Vault** | `3004` | `vault.theripplenexus.com` | `secrets:read` | AES-256 Secrets Engine & FIPS 140-3 HSM Key Rotation |
+| **06** | **Roster** | `3005` | `roster.theripplenexus.com` | `team:schedule` | Squad Workload Allocation & On-Call Shift Scheduling |
 
 ---
 
-### Confidentiality & Compliance
+## 3. Zero-Trust Security & Citadel 2FA / OTP Gate
 
-This repository and its sub-packages represent proprietary intellectual property of **Ripple Nexus**. Access to production builds and internal operational matrices is restricted to authorized personnel.
+Security across the Ripple Nexus platform is enforced at the root layout of each application:
 
-```
-CONTACT: security@theripplenexus.com // PGP ENCRYPTED COMMUNICATIONS ONLY
-```
+* **Mandatory 2-Step Identity Challenge**: Unauthenticated sessions are intercepted before any routes or telemetry load.
+* **6-Digit Cryptographic OTP**: Connects to Supabase Auth `signInWithOtp` with live 60-second expiration timers and cryptographic verification.
+* **Granular RBAC Enclave**: Enforces 5 distinct roles: `executive_admin`, `operations_lead`, `finance_director`, `security_officer`, and `client_contractor`.
+* **Session Enclave Dock**: When authenticated, an anchored session dock displays real-time 2FA active state and an instant `[LOCK SESSION]` trigger.
+
+---
+
+## 4. Multi-Tenant Boundary Isolation
+
+For enterprise contractors and external organizations, data partitioning is enforced at the query level:
+* Contractor sessions are cryptographically bound to a designated `clientId` token (e.g. `HELIOS-AI`).
+* The `filterByTenantBoundary()` engine ensures contractor queries only return records tagged with their exact organization identifier.
+* Zero cross-tenant data leakage across all 6 applications.
+
+---
+
+## 5. Technology Stack & Monorepo Foundation
+
+* **Monorepo Engine**: [Turborepo](https://turbo.build/) `v2.11.4` (Workspaces orchestration)
+* **Frontend Runtime**: [Next.js](https://nextjs.org/) `v15.2.0` (App Router, Turbopack)
+* **Component Framework**: [React](https://react.dev/) `v19.0.0`
+* **Type System**: [TypeScript](https://www.typescriptlang.org/) `v5.7.0` (Strict Null Checks)
+* **Database & Auth**: [Supabase](https://supabase.com/) (PostgreSQL with Row-Level Security)
+* **Design Tokens**: `@rn/brand` (Proprietary HSL obsidian design system & typography)
+
+---
+
+## 6. Proprietary & Confidential
+
+This repository and its sub-packages represent proprietary intellectual property of **Ripple Nexus**. Unauthorized copying, distribution, or reverse engineering is strictly prohibited.
+
+For technical inquiries or access requests:
+`security@theripplenexus.com`
+
+---
 
 <div align="center">
   <sub>© 2026 Ripple Nexus Systems. All Rights Reserved.</sub>

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 240" width="100%" height="100%">
+  <!-- Canvas Base -->
+  <rect width="1100" height="240" fill="#0A0D12"/>
+
+  <!-- Master Symbol Geometry (Scaled 0.25x) -->
+  <g transform="translate(40, 20) scale(0.25)">
+    <path d="M 160 160 H 280 V 640 H 160 Z" fill="#FFFFFF"/>
+    <path d="M 280 160 H 440 L 520 240 V 320 L 440 400 H 280 Z 
+             M 280 250 H 400 L 430 280 V 280 L 400 310 H 280 Z" 
+          fill="#FFFFFF" fill-rule="evenodd"/>
+    <path d="M 280 400 L 520 640 H 640 L 400 400 Z" fill="#FFFFFF"/>
+    <path d="M 520 160 H 640 V 480 L 520 360 Z" fill="#FFFFFF"/>
+    <polygon points="400,400 520,360 480,480" fill="#0052FF"/>
+  </g>
+
+  <!-- Vertical Hairline Divider -->
+  <line x1="230" y1="45" x2="230" y2="195" stroke="#1F2633" stroke-width="2"/>
+
+  <!-- Master Wordmark -->
+  <text x="270" y="122" 
+        font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Inter', sans-serif" 
+        font-size="46" 
+        font-weight="800" 
+        letter-spacing="5" 
+        fill="#FFFFFF">
+    RIPPLE NEXUS
+  </text>
+
+  <!-- Systems Telemetry Descriptor -->
+  <text x="273" y="162" 
+        font-family="'JetBrains Mono', 'SF Mono', monospace" 
+        font-size="12" 
+        font-weight="500" 
+        letter-spacing="4" 
+        fill="#8A99AD">
+    SYSTEMS ARCHITECTURE &amp; AI ENGINEERING
+  </text>
+
+  <!-- Live Status Telemetry Pill -->
+  <g transform="translate(980, 50)">
+    <circle cx="0" cy="0" r="4" fill="#00D2FF"/>
+    <text x="12" y="4" 
+          font-family="'JetBrains Mono', monospace" 
+          font-size="11" 
+          letter-spacing="2" 
+          fill="#00D2FF">
+      PROD
+    </text>
+  </g>
+</svg>

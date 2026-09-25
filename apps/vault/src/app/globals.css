@@ -1,0 +1,22 @@
+@import '@rn/brand/brand.css';
+
+:root {
+  --color-vault-enclave: #00D2FF;
+  --color-vault-locked: #8A99AD;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--nexus-obsidian, #0A0D12);
+  color: var(--nexus-white, #FFFFFF);
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Responsive Table Scroll Container */
+.vault-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}

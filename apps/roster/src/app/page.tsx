@@ -7,6 +7,7 @@ import { useAuth, AuthGuard, UserRole } from '@rn/auth';
 import { SquadMatrix } from '../components/SquadMatrix';
 import { CapacityRadar } from '../components/CapacityRadar';
 import { AssignSquadModal } from '../components/AssignSquadModal';
+import { BurnoutAlertEngine, OnCallScheduler, SquadSkillMatrix } from '../components/BurnoutAndScheduler';
 
 export default function RosterPage() {
   const { role, switchRole } = useAuth();
@@ -223,12 +224,19 @@ export default function RosterPage() {
 
           {/* Main Layout Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '1.5rem', alignItems: 'start' }}>
-            <SquadMatrix
-              members={members}
-              onOpenAssign={() => setAssignModalOpen(true)}
-              onUpdateStatus={handleUpdateStatus}
-            />
-            <CapacityRadar members={members} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <SquadMatrix
+                members={members}
+                onOpenAssign={() => setAssignModalOpen(true)}
+                onUpdateStatus={handleUpdateStatus}
+              />
+              <BurnoutAlertEngine members={members} />
+              <SquadSkillMatrix members={members} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <CapacityRadar members={members} />
+              <OnCallScheduler members={members} />
+            </div>
           </div>
         </main>
 

@@ -9,13 +9,16 @@ import { PipelineMatrix } from '../components/PipelineMatrix';
 import { SystemTelemetryPanel } from '../components/SystemTelemetryPanel';
 import { QuickIntakeModal } from '../components/QuickIntakeModal';
 import { AuditTrailStream } from '../components/AuditTrailStream';
+import { WarBoard } from '../components/WarBoard';
+import { BroadcastBanner, BudgetBurnTracker } from '../components/BroadcastAndBurn';
+import { ComplianceExportPanel, OperationalHealthIndex } from '../components/ComplianceAndHealth';
 
 export default function HubPage() {
   const { session, role, switchRole } = useAuth();
-  const [activeTab, setActiveTab] = useState<'overview' | 'radar' | 'pipeline' | 'telemetry'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'radar' | 'pipeline' | 'telemetry' | 'compliance'>('overview');
   const [briefs, setBriefs] = useState<Brief[]>([]);
-
   const [intakeModalOpen, setIntakeModalOpen] = useState(false);
+  const [warBoardActive, setWarBoardActive] = useState(false);
   const [supabaseConnected, setSupabaseConnected] = useState(false);
 
   useEffect(() => {
@@ -68,22 +71,48 @@ export default function HubPage() {
     { label: 'SLA RADAR', href: '#radar', active: activeTab === 'radar' },
     { label: 'PIPELINE', href: '#pipeline', active: activeTab === 'pipeline' },
     { label: 'TELEMETRY', href: '#telemetry', active: activeTab === 'telemetry' },
+    { label: 'COMPLIANCE', href: '#compliance', active: activeTab === 'compliance' },
   ];
+
+  // Activate war board if critical brief is P0 and role allows it
+  const warBoardAllowed = role === 'executive_admin' || role === 'operations_lead';
 
   return (
     <AuthGuard requiredApp="hub">
+      {/* WAR BOARD OVERLAY */}
+      {warBoardActive && (
+        <WarBoard
+          briefs={visibleBriefs}
+          onExitWarBoard={() => setWarBoardActive(false)}
+        />
+      )}
+
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        {/* BROADCAST ALERT BANNER — cross-subnet emergency notice */}
+        <BroadcastBanner />
+
         <TopNav
           currentApp="hub"
           navItems={navItems}
           rightAction={
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setIntakeModalOpen(true)}
-            >
-              + INTAKE
-            </Button>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              {warBoardAllowed && (
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => setWarBoardActive(true)}
+                >
+                  ⚡ WAR BOARD
+                </Button>
+              )}
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => setIntakeModalOpen(true)}
+              >
+                + INTAKE
+              </Button>
+            </div>
           }
         />
 
@@ -151,7 +180,7 @@ export default function HubPage() {
                   marginTop: '0.25rem',
                 }}
               >
-                Executive Command &amp; Radar
+                Executive Command & Radar
               </h1>
             </div>
 
@@ -159,9 +188,9 @@ export default function HubPage() {
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => setActiveTab('overview')}
+                onClick={() => setActiveTab('compliance')}
               >
-                FULL MATRIX
+                COMPLIANCE PKG
               </Button>
               <Button
                 variant="primary"
@@ -173,78 +202,89 @@ export default function HubPage() {
             </div>
           </div>
 
-        {/* Executive Metrics Bar (Responsive 1 to 6 columns) */}
-        <div className="hub-metric-grid" style={{ marginBottom: '1.5rem' }}>
-          <TelemetryMetric
-            label="ACTIVE BRIEFS"
-            value={visibleBriefs.length}
-            subValue="+2 this week"
-            trend="up"
-            statusColor="var(--nexus-cobalt)"
-          />
-          <TelemetryMetric
-            label="SLA COMPLIANCE"
-            value="99.4%"
-            subValue="Target: 99.0%"
-            trend="up"
-            statusColor="var(--status-nominal)"
-          />
-          <TelemetryMetric
-            label="P0 CRITICAL"
-            value={criticalCount}
-            subValue={criticalCount > 0 ? "Under watch" : "Clear"}
-            trend={criticalCount > 0 ? "down" : "neutral"}
-            statusColor={criticalCount > 0 ? "var(--status-critical)" : undefined}
-          />
-          <TelemetryMetric
-            label="IN FLIGHT"
-            value={inFlightCount}
-            subValue="3 Squads allocated"
-            trend="neutral"
-            statusColor="var(--nexus-cyan)"
-          />
-          <TelemetryMetric
-            label="PIPELINE VALUE"
-            value={`$${(totalBudget / 1000).toFixed(0)}k`}
-            subValue="Active Q3"
-            trend="up"
-            statusColor="var(--nexus-cobalt)"
-          />
-          <TelemetryMetric
-            label="CLUSTER LATENCY"
-            value="14ms"
-            subValue="Nominal"
-            trend="up"
-            statusColor="var(--status-nominal)"
-          />
-        </div>
-
-        {/* Main Content Multi-Column Layout */}
-        <div className="hub-layout-columns">
-          {/* Left Column: SLA Radar + Pipeline Matrix */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <SLARadar briefs={visibleBriefs} />
-            <PipelineMatrix
-              briefs={visibleBriefs}
-              onOpenIntake={() => setIntakeModalOpen(true)}
+          {/* Executive Metrics Bar */}
+          <div className="hub-metric-grid" style={{ marginBottom: '1.5rem' }}>
+            <TelemetryMetric
+              label="ACTIVE BRIEFS"
+              value={visibleBriefs.length}
+              subValue="+2 this week"
+              trend="up"
+              statusColor="var(--nexus-cobalt)"
+            />
+            <TelemetryMetric
+              label="SLA COMPLIANCE"
+              value="99.4%"
+              subValue="Target: 99.0%"
+              trend="up"
+              statusColor="var(--status-nominal)"
+            />
+            <TelemetryMetric
+              label="P0 CRITICAL"
+              value={criticalCount}
+              subValue={criticalCount > 0 ? 'Under watch' : 'Clear'}
+              trend={criticalCount > 0 ? 'down' : 'neutral'}
+              statusColor={criticalCount > 0 ? 'var(--status-critical)' : undefined}
+            />
+            <TelemetryMetric
+              label="IN FLIGHT"
+              value={inFlightCount}
+              subValue="3 Squads allocated"
+              trend="neutral"
+              statusColor="var(--nexus-cyan)"
+            />
+            <TelemetryMetric
+              label="PIPELINE VALUE"
+              value={`$${(totalBudget / 1000).toFixed(0)}k`}
+              subValue="Active Q3"
+              trend="up"
+              statusColor="var(--nexus-cobalt)"
+            />
+            <TelemetryMetric
+              label="CLUSTER LATENCY"
+              value="14ms"
+              subValue="Nominal"
+              trend="up"
+              statusColor="var(--status-nominal)"
             />
           </div>
 
-          {/* Right Column: Telemetry + Audit Stream */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <SystemTelemetryPanel />
-            <AuditTrailStream />
-          </div>
-        </div>
-      </main>
+          {/* Tab: Compliance */}
+          {activeTab === 'compliance' ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1.5rem' }}>
+              <ComplianceExportPanel />
+              <OperationalHealthIndex briefs={visibleBriefs} />
+              <BudgetBurnTracker briefs={visibleBriefs} />
+            </div>
+          ) : (
+            /* Main Content Multi-Column Layout */
+            <div className="hub-layout-columns">
+              {/* Left Column: SLA Radar + Pipeline Matrix + Budget Burn */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <SLARadar briefs={visibleBriefs} />
+                <PipelineMatrix
+                  briefs={visibleBriefs}
+                  onOpenIntake={() => setIntakeModalOpen(true)}
+                />
+                <BudgetBurnTracker briefs={visibleBriefs} />
+              </div>
 
-      {/* Quick Intake Drawer/Modal */}
-      <QuickIntakeModal
-        isOpen={intakeModalOpen}
-        onClose={() => setIntakeModalOpen(false)}
-        onSubmit={handleCreateBrief}
-      />
-    </div>
-  </AuthGuard>
+              {/* Right Column: Health Index + Telemetry + Audit Stream */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <OperationalHealthIndex briefs={visibleBriefs} />
+                <SystemTelemetryPanel />
+                <AuditTrailStream />
+              </div>
+            </div>
+          )}
+        </main>
+
+        {/* Quick Intake Drawer/Modal */}
+        <QuickIntakeModal
+          isOpen={intakeModalOpen}
+          onClose={() => setIntakeModalOpen(false)}
+          onSubmit={handleCreateBrief}
+        />
+      </div>
+    </AuthGuard>
   );
 }

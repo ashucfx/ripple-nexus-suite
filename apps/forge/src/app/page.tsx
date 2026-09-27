@@ -7,6 +7,8 @@ import { useAuth, AuthGuard, UserRole } from '@rn/auth';
 import { DeliverablesKanban } from '../components/DeliverablesKanban';
 import { DeploymentPipelines } from '../components/DeploymentPipelines';
 import { CreateDeliverableModal } from '../components/CreateDeliverableModal';
+import { CanaryDeployControl, BuildLogTerminal } from '../components/CanaryAndBuildLog';
+import { FeatureFlagPanel, DeploymentHeatmap } from '../components/FeatureFlagsAndHeatmap';
 
 export default function ForgePage() {
   const { role, switchRole } = useAuth();
@@ -227,13 +229,21 @@ export default function ForgePage() {
           </div>
 
           {/* Main Layout */}
-          <div className="forge-pipeline-grid">
-            <DeliverablesKanban
-              deliverables={deliverables}
-              onUpdateStatus={handleUpdateStatus}
-              onOpenCreate={() => setCreateModalOpen(true)}
-            />
-            <DeploymentPipelines />
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.5fr) minmax(0, 1fr)', gap: '1.5rem', alignItems: 'start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <DeliverablesKanban
+                deliverables={deliverables}
+                onUpdateStatus={handleUpdateStatus}
+                onOpenCreate={() => setCreateModalOpen(true)}
+              />
+              <FeatureFlagPanel />
+              <DeploymentHeatmap />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <CanaryDeployControl />
+              <BuildLogTerminal />
+              <DeploymentPipelines />
+            </div>
           </div>
         </main>
 

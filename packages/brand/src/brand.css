@@ -184,6 +184,19 @@ samp {
   background: rgba(255, 255, 255, 0.05);
 }
 
+.rn-btn-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.rn-btn-danger:hover:not(:disabled) {
+  background: #EF4444;
+  color: #FFFFFF;
+  border-color: #EF4444;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.4);
+}
+
 /* Badge System */
 .rn-badge {
   display: inline-flex;

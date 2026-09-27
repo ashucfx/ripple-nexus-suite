@@ -7,6 +7,7 @@ import { useAuth, AuthGuard, UserRole } from '@rn/auth';
 import { ClientMatrix } from '../components/ClientMatrix';
 import { ClientHealthRadar } from '../components/ClientHealthRadar';
 import { OnboardClientModal } from '../components/OnboardClientModal';
+import { NPSSentimentTracker } from '../components/ContractAndNPS';
 
 export default function AtlasPage() {
   const { role, switchRole } = useAuth();
@@ -205,11 +206,14 @@ export default function AtlasPage() {
           </div>
 
           {/* Layout Columns */}
-          <div className="atlas-layout-columns">
-            <ClientMatrix
-              clients={clients}
-              onOpenOnboard={() => setOnboardModalOpen(true)}
-            />
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '1.5rem', alignItems: 'start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <ClientMatrix
+                clients={clients}
+                onOpenOnboard={() => setOnboardModalOpen(true)}
+              />
+              <NPSSentimentTracker />
+            </div>
             <ClientHealthRadar clients={clients} />
           </div>
         </main>

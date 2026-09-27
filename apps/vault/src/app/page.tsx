@@ -6,6 +6,7 @@ import { useAuth, AuthGuard, UserRole } from '@rn/auth';
 import { SecretsMatrix, EnclaveSecret } from '../components/SecretsMatrix';
 import { RotateSecretModal } from '../components/RotateSecretModal';
 import { ComplianceRadar } from '../components/ComplianceRadar';
+import { BreakGlassPanel, SecretLifecycleTimeline } from '../components/BreakGlassAndLifecycle';
 
 export default function VaultPage() {
   const { role, switchRole } = useAuth();
@@ -200,7 +201,11 @@ export default function VaultPage() {
               onOpenRotate={handleOpenRotate}
               onOpenNewSecret={handleOpenNewSecret}
             />
-            <ComplianceRadar secrets={secrets} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <BreakGlassPanel />
+              <SecretLifecycleTimeline secrets={secrets} />
+              <ComplianceRadar secrets={secrets} />
+            </div>
           </div>
         </main>
 

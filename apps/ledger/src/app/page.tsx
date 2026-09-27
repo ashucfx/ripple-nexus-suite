@@ -7,6 +7,7 @@ import { useAuth, AuthGuard, filterByTenantBoundary, UserRole } from '@rn/auth';
 import { InvoiceMatrix } from '../components/InvoiceMatrix';
 import { CashflowRadar } from '../components/CashflowRadar';
 import { IssueInvoiceModal } from '../components/IssueInvoiceModal';
+import { EscrowMilestoneTracker, RevenueVelocityChart } from '../components/EscrowAndRevenue';
 
 export default function LedgerPage() {
   const { session, role, switchRole } = useAuth();
@@ -240,12 +241,18 @@ export default function LedgerPage() {
 
           {/* Main Layout Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: '1.5rem', alignItems: 'start' }}>
-            <InvoiceMatrix
-              invoices={visibleInvoices}
-              onOpenIssue={() => setIssueModalOpen(true)}
-              onUpdateStatus={handleUpdateStatus}
-            />
-            <CashflowRadar invoices={visibleInvoices} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <InvoiceMatrix
+                invoices={visibleInvoices}
+                onOpenIssue={() => setIssueModalOpen(true)}
+                onUpdateStatus={handleUpdateStatus}
+              />
+              <EscrowMilestoneTracker />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <RevenueVelocityChart invoices={visibleInvoices} />
+              <CashflowRadar invoices={visibleInvoices} />
+            </div>
           </div>
         </main>
 

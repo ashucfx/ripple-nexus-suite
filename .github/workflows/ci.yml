@@ -1,31 +1,41 @@
-name: CI
+name: RN Suite CI — Quality Gate
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
+
+env:
+  TURBO_TELEMETRY_DISABLED: 1
+  NODE_ENV: production
 
 jobs:
   quality:
-    name: Quality Gates
+    name: Typecheck · Lint · Build (all 6 subnets)
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    timeout-minutes: 20
 
-      - uses: actions/setup-node@v4
+    steps:
+      - name: 01. Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 02. Setup Node.js 20 LTS
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
 
-      - name: Install dependencies
+      - name: 03. Install Dependencies (frozen lockfile)
         run: npm ci
 
-      - name: Typecheck
+      - name: 04. Strict TypeScript Check — All Packages
         run: npm run typecheck
 
-      - name: Lint
+      - name: 05. ESLint Quality Gate — All Packages
         run: npm run lint
 
-      - name: Build
+      - name: 06. Production Build Verification — All 6 Subnets
         run: npm run build
+        env:
+          NODE_ENV: production

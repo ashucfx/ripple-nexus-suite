@@ -57,12 +57,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       email,
       name: email.split('@')[0].toUpperCase(),
       role,
-      clientId: role === 'client_contractor' ? (clientId || 'HELIOS-AI') : undefined,
+      clientId: role === 'client_contractor' ? (clientId || 'CLIENT-TENANT') : undefined,
       mfaVerified: true,
       authenticatedAt: new Date().toISOString(),
     };
     setSession(newSession);
   };
+
 
   const logout = () => {
     setSession(null);
@@ -80,7 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const updated: UserSession = {
       ...session,
       role,
-      clientId: role === 'client_contractor' ? (clientId || 'HELIOS-AI') : undefined,
+      clientId: role === 'client_contractor' ? (clientId || 'CLIENT-TENANT') : undefined,
     };
     setSession(updated);
   };
@@ -153,9 +154,9 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
 
   // Authentication State Machine: 'credentials' | 'otp'
   const [authStep, setAuthStep] = useState<'credentials' | 'otp'>('credentials');
-  const [emailInput, setEmailInput] = useState('alex@theripplenexus.com');
+  const [emailInput, setEmailInput] = useState('');
   const [roleInput, setRoleInput] = useState<UserRole>('executive_admin');
-  const [clientInput, setClientInput] = useState('HELIOS-AI');
+  const [clientInput, setClientInput] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [otpError, setOtpError] = useState('');
   const [resendTimer, setResendTimer] = useState(60);
@@ -377,7 +378,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({
                   <input
                     type="text"
                     required
-                    placeholder="e.g. HELIOS-AI or ACME-CORP"
+                    placeholder="e.g. ACME-CORP or CLIENT-01"
                     value={clientInput}
                     onChange={(e) => setClientInput(e.target.value.toUpperCase())}
                     className="rn-input"

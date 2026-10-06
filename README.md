@@ -1,6 +1,6 @@
 # 🔷 Ripple Nexus Operations Suite
 
-> "High-integrity systems architecture and mission-critical AI operations."
+> "High-integrity systems architecture and mission-critical enterprise operations."
 > *Zero-Trust Operations Platform Orchestrating 6 Mission-Critical Subnets*
 
 [![CI/CD](https://img.shields.io/badge/CI%2FCD-Passing-brightgreen)](https://github.com/ashucfx/ripple-nexus-suite/actions) [![Turborepo](https://img.shields.io/badge/Turborepo-v2.11.4-blue)](https://turbo.build/) [![Next.js](https://img.shields.io/badge/Next.js-v15.2.0-black)](https://nextjs.org/) [![React](https://img.shields.io/badge/React-v19.0.0-blue)](https://react.dev/) [![TypeScript](https://img.shields.io/badge/TypeScript-Strict%20v5.7-blue)](https://www.typescriptlang.org/) [![Auth Enclave](https://img.shields.io/badge/Auth-Citadel%202FA%20%2F%20OTP-brightgreen)](#) [![Compliance](https://img.shields.io/badge/Compliance-FIPS%20140--3%20%7C%20SOC--2-brightgreen)](#)
@@ -66,7 +66,7 @@ Security across the Ripple Nexus platform is enforced at the root layout of each
 ## 4. Multi-Tenant Boundary Isolation
 
 For enterprise contractors and external organizations, data partitioning is enforced at the query level:
-* Contractor sessions are cryptographically bound to a designated `clientId` token (e.g. `HELIOS-AI`).
+* Contractor sessions are cryptographically bound to a designated `clientId` token (e.g. `ENTERPRISE-CORP`).
 * The `filterByTenantBoundary()` engine ensures contractor queries only return records tagged with their exact organization identifier.
 * Zero cross-tenant data leakage across all 6 applications.
 

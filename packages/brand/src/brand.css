@@ -312,3 +312,73 @@ samp {
 .rn-input::placeholder {
   color: var(--nexus-slate-dark);
 }
+
+/* Responsive Layout System across Mobile, Tablet, PC, and Ultrawide */
+.rn-responsive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.rn-metrics-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .rn-metrics-bar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .rn-metrics-bar {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Empty State Component Styles */
+.rn-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background: rgba(20, 25, 35, 0.4);
+  border: 1px dashed var(--nexus-border);
+  border-radius: var(--radius-md);
+}
+
+.rn-empty-state-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--nexus-surface3);
+  border: 1px solid var(--nexus-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: var(--nexus-cyan);
+  margin-bottom: 1rem;
+}
+
+.rn-empty-state-title {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--nexus-white);
+  margin-bottom: 0.35rem;
+}
+
+.rn-empty-state-desc {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--nexus-slate);
+  max-width: 440px;
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+}
+

@@ -19,7 +19,7 @@ export const QuickIntakeModal: React.FC<QuickIntakeModalProps> = ({
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState<PriorityLevel>('p1_high');
   const [slaHours, setSlaHours] = useState('24');
-  const [budget, setBudget] = useState('15000');
+  const [budget, setBudget] = useState('');
   const [scope, setScope] = useState('');
 
   if (!isOpen) return null;
@@ -136,7 +136,7 @@ export const QuickIntakeModal: React.FC<QuickIntakeModalProps> = ({
             <input
               type="text"
               required
-              placeholder="e.g. ACME-CORP or HELIOS-AI"
+              placeholder="e.g. ACME-CORP or ENTERPRISE-01"
               value={clientName}
               onChange={(e) => setClientName(e.target.value)}
               className="rn-input"

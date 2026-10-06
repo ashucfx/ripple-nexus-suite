@@ -2,26 +2,32 @@
 
 import React, { useState, useEffect } from 'react';
 import { TopNav, TelemetryMetric, Button } from '@rn/brand';
-import { getSupabaseClient, Brief } from '@rn/db';
+import { getSupabaseClient, getStoredItem, setStoredItem, Brief, BriefStatus } from '@rn/db';
 import { useAuth, AuthGuard, filterByTenantBoundary, UserRole } from '@rn/auth';
 import { SLARadar } from '../components/SLARadar';
 import { PipelineMatrix } from '../components/PipelineMatrix';
 import { SystemTelemetryPanel } from '../components/SystemTelemetryPanel';
 import { QuickIntakeModal } from '../components/QuickIntakeModal';
-import { AuditTrailStream } from '../components/AuditTrailStream';
+import { AuditTrailStream, appendAuditLog } from '../components/AuditTrailStream';
 import { WarBoard } from '../components/WarBoard';
 import { BroadcastBanner, BudgetBurnTracker } from '../components/BroadcastAndBurn';
 import { ComplianceExportPanel, OperationalHealthIndex } from '../components/ComplianceAndHealth';
+import { BriefDetailModal } from '../components/BriefDetailModal';
 
 export default function HubPage() {
   const { session, role, switchRole } = useAuth();
   const [activeTab, setActiveTab] = useState<'overview' | 'radar' | 'pipeline' | 'telemetry' | 'compliance'>('overview');
   const [briefs, setBriefs] = useState<Brief[]>([]);
   const [intakeModalOpen, setIntakeModalOpen] = useState(false);
+  const [selectedBrief, setSelectedBrief] = useState<Brief | null>(null);
   const [warBoardActive, setWarBoardActive] = useState(false);
   const [supabaseConnected, setSupabaseConnected] = useState(false);
 
+  // Load from persistent local storage first, then check Supabase
   useEffect(() => {
+    const local = getStoredItem<Brief[]>('hub_briefs', []);
+    setBriefs(local);
+
     const supabase = getSupabaseClient();
     if (!supabase) return;
 
@@ -31,6 +37,7 @@ export default function HubPage() {
         const { data, error } = await supabase.from('briefs').select('*');
         if (!error && data && data.length > 0) {
           setBriefs(data as Brief[]);
+          setStoredItem('hub_briefs', data);
         }
       } catch (err) {
         console.warn('Supabase initialization fallback:', err);
@@ -49,7 +56,15 @@ export default function HubPage() {
       updated_at: new Date().toISOString(),
     };
 
-    setBriefs((prev) => [briefRecord, ...prev]);
+    const updated = [briefRecord, ...briefs];
+    setBriefs(updated);
+    setStoredItem('hub_briefs', updated);
+
+    appendAuditLog({
+      actor: session?.email || 'operator',
+      action: `Created operational brief: ${briefRecord.title} for client [${briefRecord.client_name || briefRecord.client_id}]`,
+      type: 'brief',
+    });
 
     const supabase = getSupabaseClient();
     if (supabase) {
@@ -59,6 +74,69 @@ export default function HubPage() {
         console.warn('Supabase insertion warning:', err);
       }
     }
+  };
+
+  const handleUpdateBriefStatus = async (id: string, newStatus: BriefStatus) => {
+    const updated = briefs.map((b) =>
+      b.id === id ? { ...b, status: newStatus, updated_at: new Date().toISOString() } : b
+    );
+    setBriefs(updated);
+    setStoredItem('hub_briefs', updated);
+
+    if (selectedBrief && selectedBrief.id === id) {
+      setSelectedBrief({ ...selectedBrief, status: newStatus });
+    }
+
+    appendAuditLog({
+      actor: session?.email || 'operator',
+      action: `Updated status to [${newStatus.toUpperCase()}] for brief #${id}`,
+      type: 'brief',
+    });
+
+    const supabase = getSupabaseClient();
+    if (supabase) {
+      try {
+        await (supabase as any)
+          .from('briefs')
+          .update({ status: newStatus, updated_at: new Date().toISOString() })
+          .eq('id', id);
+      } catch (err) {
+        console.warn('Supabase update warning:', err);
+      }
+    }
+  };
+
+  const handleDeleteBrief = async (id: string) => {
+    const updated = briefs.filter((b) => b.id !== id);
+    setBriefs(updated);
+    setStoredItem('hub_briefs', updated);
+    setSelectedBrief(null);
+
+    appendAuditLog({
+      actor: session?.email || 'operator',
+      action: `Removed brief #${id} from active pipeline`,
+      type: 'brief',
+    });
+
+    const supabase = getSupabaseClient();
+    if (supabase) {
+      try {
+        await (supabase as any).from('briefs').delete().eq('id', id);
+      } catch (err) {
+        console.warn('Supabase delete warning:', err);
+      }
+    }
+  };
+
+  const handleExportBriefs = () => {
+    const payload = JSON.stringify(visibleBriefs, null, 2);
+    const blob = new Blob([payload], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `hub-briefs-export-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const visibleBriefs = filterByTenantBoundary(briefs, session);
@@ -74,7 +152,6 @@ export default function HubPage() {
     { label: 'COMPLIANCE', href: '#compliance', active: activeTab === 'compliance' },
   ];
 
-  // Activate war board if critical brief is P0 and role allows it
   const warBoardAllowed = role === 'executive_admin' || role === 'operations_lead';
 
   return (
@@ -95,7 +172,7 @@ export default function HubPage() {
           currentApp="hub"
           navItems={navItems}
           rightAction={
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               {warBoardAllowed && (
                 <Button
                   variant="danger"
@@ -103,6 +180,16 @@ export default function HubPage() {
                   onClick={() => setWarBoardActive(true)}
                 >
                   ⚡ WAR BOARD
+                </Button>
+              )}
+              {visibleBriefs.length > 0 && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleExportBriefs}
+                  title="Export briefs to JSON"
+                >
+                  EXPORT
                 </Button>
               )}
               <Button
@@ -149,7 +236,7 @@ export default function HubPage() {
                     color: supabaseConnected ? 'var(--status-nominal)' : 'var(--nexus-slate)',
                   }}
                 >
-                  {supabaseConnected ? 'SUPABASE CLOUD ACTIVE' : 'LOCAL CLUSTER MODE'}
+                  {supabaseConnected ? 'SUPABASE CLOUD ACTIVE' : 'SECURE LOCAL PERSISTENCE'}
                 </span>
                 <span style={{ color: 'var(--nexus-border)' }}>•</span>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
@@ -165,7 +252,7 @@ export default function HubPage() {
                     <option value="executive_admin">EXECUTIVE ADMIN</option>
                     <option value="systems_architect">SYSTEMS ARCHITECT</option>
                     <option value="operations_lead">OPERATIONS LEAD</option>
-                    <option value="client_contractor">CLIENT CONTRACTOR [HELIOS-AI]</option>
+                    <option value="client_contractor">CLIENT CONTRACTOR [TENANT GATEWAY]</option>
                     <option value="auditor">AUDITOR</option>
                   </select>
                 </div>
@@ -180,11 +267,11 @@ export default function HubPage() {
                   marginTop: '0.25rem',
                 }}
               >
-                Executive Command & Radar
+                Executive Command &amp; Radar
               </h1>
             </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               <Button
                 variant="secondary"
                 size="sm"
@@ -203,17 +290,17 @@ export default function HubPage() {
           </div>
 
           {/* Executive Metrics Bar */}
-          <div className="hub-metric-grid" style={{ marginBottom: '1.5rem' }}>
+          <div className="rn-metrics-bar" style={{ marginBottom: '1.5rem' }}>
             <TelemetryMetric
               label="ACTIVE BRIEFS"
               value={visibleBriefs.length}
-              subValue="+2 this week"
-              trend="up"
+              subValue={visibleBriefs.length === 0 ? 'Awaiting intake' : `${visibleBriefs.length} registered`}
+              trend={visibleBriefs.length > 0 ? 'up' : 'neutral'}
               statusColor="var(--nexus-cobalt)"
             />
             <TelemetryMetric
               label="SLA COMPLIANCE"
-              value="99.4%"
+              value={visibleBriefs.length === 0 ? '100%' : '99.8%'}
               subValue="Target: 99.0%"
               trend="up"
               statusColor="var(--status-nominal)"
@@ -221,21 +308,21 @@ export default function HubPage() {
             <TelemetryMetric
               label="P0 CRITICAL"
               value={criticalCount}
-              subValue={criticalCount > 0 ? 'Under watch' : 'Clear'}
+              subValue={criticalCount > 0 ? 'Under escalation' : 'Clear'}
               trend={criticalCount > 0 ? 'down' : 'neutral'}
               statusColor={criticalCount > 0 ? 'var(--status-critical)' : undefined}
             />
             <TelemetryMetric
               label="IN FLIGHT"
               value={inFlightCount}
-              subValue="3 Squads allocated"
+              subValue="Squad execution"
               trend="neutral"
               statusColor="var(--nexus-cyan)"
             />
             <TelemetryMetric
               label="PIPELINE VALUE"
               value={`$${(totalBudget / 1000).toFixed(0)}k`}
-              subValue="Active Q3"
+              subValue="Active allocation"
               trend="up"
               statusColor="var(--nexus-cobalt)"
             />
@@ -250,25 +337,29 @@ export default function HubPage() {
 
           {/* Tab: Compliance */}
           {activeTab === 'compliance' ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.5rem' }}>
               <ComplianceExportPanel />
               <OperationalHealthIndex briefs={visibleBriefs} />
               <BudgetBurnTracker briefs={visibleBriefs} />
             </div>
           ) : (
             /* Main Content Multi-Column Layout */
-            <div className="hub-layout-columns">
-              {/* Left Column: SLA Radar + Pipeline Matrix + Budget Burn */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
+              {/* Column 1: SLA Radar + Pipeline Matrix + Budget Burn */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                <SLARadar briefs={visibleBriefs} />
+                <SLARadar
+                  briefs={visibleBriefs}
+                  onSelectBrief={(b) => setSelectedBrief(b)}
+                />
                 <PipelineMatrix
                   briefs={visibleBriefs}
                   onOpenIntake={() => setIntakeModalOpen(true)}
+                  onSelectBrief={(b) => setSelectedBrief(b)}
                 />
                 <BudgetBurnTracker briefs={visibleBriefs} />
               </div>
 
-              {/* Right Column: Health Index + Telemetry + Audit Stream */}
+              {/* Column 2: Health Index + Telemetry + Audit Stream */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 <OperationalHealthIndex briefs={visibleBriefs} />
                 <SystemTelemetryPanel />
@@ -283,6 +374,15 @@ export default function HubPage() {
           isOpen={intakeModalOpen}
           onClose={() => setIntakeModalOpen(false)}
           onSubmit={handleCreateBrief}
+        />
+
+        {/* Brief Detail & Lifecycle Modal */}
+        <BriefDetailModal
+          brief={selectedBrief}
+          isOpen={!!selectedBrief}
+          onClose={() => setSelectedBrief(null)}
+          onUpdateStatus={handleUpdateBriefStatus}
+          onDelete={handleDeleteBrief}
         />
       </div>
     </AuthGuard>

@@ -17,6 +17,7 @@ export const IssueInvoiceModal: React.FC<IssueInvoiceModalProps> = ({
 }) => {
   const [clientId, setClientId] = useState('HELIOS-AI');
   const [clientName, setClientName] = useState('Helios Autonomous Labs');
+  const [clientEmail, setClientEmail] = useState('billing@helios.example');
   const [amount, setAmount] = useState<number>(45000);
   const [currency, setCurrency] = useState('USD');
   const [countryCode, setCountryCode] = useState('US');
@@ -39,6 +40,7 @@ export const IssueInvoiceModal: React.FC<IssueInvoiceModalProps> = ({
       await onSubmit({
         client_id: clientId.trim().toUpperCase(),
         client_name: clientName.trim(),
+        client_email: clientEmail.trim(),
         country_code: countryCode,
         invoice_number: invoiceNum,
         amount: quote.totalPayable,
@@ -130,6 +132,38 @@ export const IssueInvoiceModal: React.FC<IssueInvoiceModalProps> = ({
             >
               Issue Institutional Invoice
             </h3>
+          </div>
+
+          <div>
+            <label
+              style={{
+                display: 'block',
+                fontFamily: 'var(--font-mono, monospace)',
+                fontSize: '0.6875rem',
+                letterSpacing: '0.08em',
+                color: '#8A99AD',
+                marginBottom: '0.5rem',
+              }}
+            >
+              BILLING EMAIL
+            </label>
+            <input
+              type="email"
+              required
+              value={clientEmail}
+              onChange={(e) => setClientEmail(e.target.value)}
+              placeholder="finance@client.example"
+              style={{
+                width: '100%',
+                backgroundColor: '#1A212E',
+                border: '1px solid #1F2633',
+                padding: '0.65rem 0.85rem',
+                color: '#FFFFFF',
+                borderRadius: '4px',
+                fontFamily: 'var(--font-sans, sans-serif)',
+                fontSize: '0.8125rem',
+              }}
+            />
           </div>
           <button
             type="button"

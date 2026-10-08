@@ -3,14 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import { TopNav, TelemetryMetric, Button } from '@rn/brand';
 import { getSupabaseClient, TeamMember } from '@rn/db';
-import { useAuth, AuthGuard, UserRole } from '@rn/auth';
+import { useAuth, AuthGuard } from '@rn/auth';
 import { SquadMatrix } from '../components/SquadMatrix';
 import { CapacityRadar } from '../components/CapacityRadar';
 import { AssignSquadModal } from '../components/AssignSquadModal';
 import { BurnoutAlertEngine, OnCallScheduler, SquadSkillMatrix } from '../components/BurnoutAndScheduler';
 
 export default function RosterPage() {
-  const { role, switchRole } = useAuth();
+  const { role } = useAuth();
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [supabaseConnected, setSupabaseConnected] = useState(false);
@@ -150,37 +150,6 @@ export default function RosterPage() {
               </h1>
             </div>
 
-            {/* Quick Role Switcher for RBAC Boundary Testing */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <span
-                style={{
-                  fontFamily: 'var(--font-mono, monospace)',
-                  fontSize: '0.6875rem',
-                  color: 'var(--nexus-slate, #8A99AD)',
-                }}
-              >
-                RBAC TEST:
-              </span>
-              {(['executive_admin', 'operations_lead', 'client_contractor'] as UserRole[]).map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => switchRole(r, r === 'client_contractor' ? 'HELIOS-AI' : undefined)}
-                  style={{
-                    fontFamily: 'var(--font-mono, monospace)',
-                    fontSize: '0.625rem',
-                    padding: '4px 8px',
-                    borderRadius: '4px',
-                    border: role === r ? '1px solid var(--nexus-cobalt, #0052FF)' : '1px solid var(--nexus-border, #1F2633)',
-                    backgroundColor: role === r ? 'var(--nexus-surface3, #1A212E)' : 'transparent',
-                    color: role === r ? 'var(--nexus-cyan, #00D2FF)' : 'var(--nexus-slate, #8A99AD)',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {r.split('_')[0].toUpperCase()}
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Metric Telemetry Row */}

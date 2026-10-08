@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { TopNav, TelemetryMetric, Button } from '@rn/brand';
 import { getSupabaseClient, getStoredItem, setStoredItem, Brief, BriefStatus } from '@rn/db';
-import { useAuth, AuthGuard, filterByTenantBoundary, UserRole } from '@rn/auth';
+import { useAuth, AuthGuard, filterByTenantBoundary } from '@rn/auth';
 import { SLARadar } from '../components/SLARadar';
 import { PipelineMatrix } from '../components/PipelineMatrix';
 import { SystemTelemetryPanel } from '../components/SystemTelemetryPanel';
@@ -15,7 +15,7 @@ import { ComplianceExportPanel, OperationalHealthIndex } from '../components/Com
 import { BriefDetailModal } from '../components/BriefDetailModal';
 
 export default function HubPage() {
-  const { session, role, switchRole } = useAuth();
+  const { session, role } = useAuth();
   const [activeTab, setActiveTab] = useState<'overview' | 'radar' | 'pipeline' | 'telemetry' | 'compliance'>('overview');
   const [briefs, setBriefs] = useState<Brief[]>([]);
   const [intakeModalOpen, setIntakeModalOpen] = useState(false);
@@ -239,23 +239,9 @@ export default function HubPage() {
                   {supabaseConnected ? 'SUPABASE CLOUD ACTIVE' : 'SECURE LOCAL PERSISTENCE'}
                 </span>
                 <span style={{ color: 'var(--nexus-border)' }}>•</span>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <span style={{ fontSize: '0.625rem', fontFamily: 'var(--font-mono)', color: 'var(--nexus-slate)' }}>
-                    CLEARANCE:
-                  </span>
-                  <select
-                    value={role}
-                    onChange={(e) => switchRole(e.target.value as UserRole)}
-                    className="rn-input"
-                    style={{ width: 'auto', padding: '0.15rem 0.4rem', fontSize: '0.625rem', fontFamily: 'var(--font-mono)' }}
-                  >
-                    <option value="executive_admin">EXECUTIVE ADMIN</option>
-                    <option value="systems_architect">SYSTEMS ARCHITECT</option>
-                    <option value="operations_lead">OPERATIONS LEAD</option>
-                    <option value="client_contractor">CLIENT CONTRACTOR [TENANT GATEWAY]</option>
-                    <option value="auditor">AUDITOR</option>
-                  </select>
-                </div>
+                <span style={{ fontSize: '0.625rem', fontFamily: 'var(--font-mono)', color: 'var(--nexus-slate)' }}>
+                  CLEARANCE: {role.toUpperCase()}
+                </span>
               </div>
               <h1
                 style={{

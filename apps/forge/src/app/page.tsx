@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { TopNav, TelemetryMetric, Button } from '@rn/brand';
 import { getSupabaseClient, Deliverable } from '@rn/db';
-import { useAuth, AuthGuard, UserRole } from '@rn/auth';
+import { useAuth, AuthGuard } from '@rn/auth';
 import { DeliverablesKanban } from '../components/DeliverablesKanban';
 import { DeploymentPipelines } from '../components/DeploymentPipelines';
 import { CreateDeliverableModal } from '../components/CreateDeliverableModal';
@@ -11,7 +11,7 @@ import { CanaryDeployControl, BuildLogTerminal } from '../components/CanaryAndBu
 import { FeatureFlagPanel, DeploymentHeatmap } from '../components/FeatureFlagsAndHeatmap';
 
 export default function ForgePage() {
-  const { role, switchRole } = useAuth();
+  const { role } = useAuth();
   const [deliverables, setDeliverables] = useState<Deliverable[]>([]);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [supabaseConnected, setSupabaseConnected] = useState(false);
@@ -140,22 +140,9 @@ export default function ForgePage() {
                   {supabaseConnected ? 'SUPABASE CLOUD ACTIVE' : 'LOCAL CLUSTER MODE'}
                 </span>
                 <span style={{ color: 'var(--nexus-border)' }}>•</span>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                  <span style={{ fontSize: '0.625rem', fontFamily: 'var(--font-mono)', color: 'var(--nexus-slate)' }}>
-                    CLEARANCE:
-                  </span>
-                  <select
-                    value={role}
-                    onChange={(e) => switchRole(e.target.value as UserRole)}
-                    className="rn-input"
-                    style={{ width: 'auto', padding: '0.15rem 0.4rem', fontSize: '0.625rem', fontFamily: 'var(--font-mono)' }}
-                  >
-                    <option value="executive_admin">EXECUTIVE ADMIN</option>
-                    <option value="systems_architect">SYSTEMS ARCHITECT</option>
-                    <option value="operations_lead">OPERATIONS LEAD</option>
-                    <option value="client_contractor">CLIENT CONTRACTOR</option>
-                  </select>
-                </div>
+                <span style={{ fontSize: '0.625rem', fontFamily: 'var(--font-mono)', color: 'var(--nexus-slate)' }}>
+                  CLEARANCE: {role.toUpperCase()}
+                </span>
               </div>
               <h1
                 style={{

@@ -10,10 +10,7 @@ export const getSupabaseClient = (): SupabaseClient<Database> | null => {
 
   const env = typeof process !== 'undefined' ? process.env : {};
   const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL || env.SUPABASE_URL;
-  const supabaseKey =
-    env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    env.SUPABASE_ANON_KEY ||
-    env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY || env.SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
     return null;

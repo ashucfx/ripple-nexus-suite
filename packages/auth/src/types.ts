@@ -6,6 +6,18 @@ export type UserRole =
   | 'client_contractor'
   | 'auditor';
 
+export const USER_ROLES: readonly UserRole[] = [
+  'executive_admin',
+  'systems_architect',
+  'operations_lead',
+  'security_officer',
+  'client_contractor',
+  'auditor',
+];
+
+export const isUserRole = (value: unknown): value is UserRole =>
+  typeof value === 'string' && USER_ROLES.includes(value as UserRole);
+
 export type Permission =
   | 'ops:read'
   | 'ops:write'

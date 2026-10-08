@@ -1,5 +1,7 @@
 export type BriefStatus = 'intake' | 'in_progress' | 'review' | 'delivered' | 'blocked';
 export type PriorityLevel = 'p0_critical' | 'p1_high' | 'p2_medium' | 'p3_low';
+export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
+export type JsonObject = { [key: string]: JsonValue };
 
 export interface Brief {
   id: string;
@@ -96,48 +98,59 @@ export interface Database {
         Row: Brief;
         Insert: Omit<Brief, 'id' | 'created_at' | 'updated_at'>;
         Update: Partial<Omit<Brief, 'id'>>;
+        Relationships: [];
       };
       deliverables: {
         Row: Deliverable;
         Insert: Omit<Deliverable, 'id' | 'created_at'>;
         Update: Partial<Omit<Deliverable, 'id'>>;
+        Relationships: [];
       };
       clients: {
         Row: Client;
         Insert: Omit<Client, 'id' | 'created_at'>;
         Update: Partial<Omit<Client, 'id'>>;
+        Relationships: [];
       };
       invoices: {
         Row: Invoice;
         Insert: Omit<Invoice, 'id' | 'created_at'>;
         Update: Partial<Omit<Invoice, 'id'>>;
+        Relationships: [];
       };
       team_members: {
         Row: TeamMember;
         Insert: Omit<TeamMember, 'id' | 'created_at'>;
         Update: Partial<Omit<TeamMember, 'id'>>;
+        Relationships: [];
       };
       audit_logs: {
         Row: AuditLog;
         Insert: Omit<AuditLog, 'id' | 'timestamp'>;
         Update: Partial<Omit<AuditLog, 'id'>>;
+        Relationships: [];
       };
       system_metrics: {
         Row: SystemMetric;
         Insert: Omit<SystemMetric, 'id' | 'timestamp'>;
         Update: Partial<Omit<SystemMetric, 'id'>>;
+        Relationships: [];
       };
       vault_secret_references: {
         Row: VaultSecretReference;
         Insert: Omit<VaultSecretReference, 'id' | 'created_at'>;
         Update: Partial<Omit<VaultSecretReference, 'id'>>;
+        Relationships: [];
       };
       rn_onboarding_jobs: {
         Row: OnboardingJob;
         Insert: Omit<OnboardingJob, 'id' | 'correlation_id' | 'created_at' | 'updated_at' | 'attempt_count' | 'status' | 'next_attempt_at'>;
         Update: Partial<Omit<OnboardingJob, 'id'>>;
+        Relationships: [];
       };
     };
+    Views: {};
+    Functions: {};
   };
 }
 
@@ -161,7 +174,7 @@ export interface OnboardingJob {
   tenant_id?: string;
   requested_by: string;
   correlation_id: string;
-  payload: Record<string, unknown>;
+  payload: JsonObject;
   status: OnboardingJobStatus;
   attempt_count: number;
   last_error?: string;

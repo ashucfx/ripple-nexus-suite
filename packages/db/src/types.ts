@@ -3,6 +3,7 @@ export type PriorityLevel = 'p0_critical' | 'p1_high' | 'p2_medium' | 'p3_low';
 
 export interface Brief {
   id: string;
+  tenant_id?: string;
   client_id: string;
   client_name?: string;
   title: string;
@@ -17,6 +18,7 @@ export interface Brief {
 
 export interface Deliverable {
   id: string;
+  tenant_id?: string;
   brief_id: string;
   title: string;
   status: 'pending' | 'in_review' | 'approved' | 'deployed';
@@ -28,6 +30,7 @@ export interface Deliverable {
 
 export interface Client {
   id: string;
+  tenant_id?: string;
   name: string;
   code: string;
   tier: 'enterprise' | 'growth' | 'stealth';
@@ -40,6 +43,7 @@ export interface Client {
 
 export interface Invoice {
   id: string;
+  tenant_id?: string;
   client_id: string;
   client_name?: string;
   invoice_number: string;
@@ -53,6 +57,7 @@ export interface Invoice {
 
 export interface TeamMember {
   id: string;
+  tenant_id?: string;
   full_name: string;
   email: string;
   role: string;
@@ -64,6 +69,7 @@ export interface TeamMember {
 
 export interface AuditLog {
   id: string;
+  tenant_id?: string;
   user_email: string;
   action: string;
   resource_type: string;
@@ -74,6 +80,7 @@ export interface AuditLog {
 
 export interface SystemMetric {
   id: string;
+  tenant_id?: string;
   node_name: string;
   cpu_load: number;
   memory_load: number;
@@ -120,6 +127,22 @@ export interface Database {
         Insert: Omit<SystemMetric, 'id' | 'timestamp'>;
         Update: Partial<Omit<SystemMetric, 'id'>>;
       };
+      vault_secret_references: {
+        Row: VaultSecretReference;
+        Insert: Omit<VaultSecretReference, 'id' | 'created_at'>;
+        Update: Partial<Omit<VaultSecretReference, 'id'>>;
+      };
     };
   };
+}
+
+export interface VaultSecretReference {
+  id: string;
+  tenant_id: string;
+  secret_name: string;
+  provider_reference: string;
+  environment: string;
+  last_rotated_at?: string;
+  status: 'active' | 'rotation_due' | 'revoked';
+  created_at: string;
 }

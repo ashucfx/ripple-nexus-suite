@@ -136,15 +136,15 @@ declare
 begin
   foreach table_name in array tenant_tables loop
     execute format('alter table public.%I enable row level security', table_name);
-    execute format('drop policy if exists rn_%I_select on public.%I', table_name, table_name);
-    execute format('drop policy if exists rn_%I_write on public.%I', table_name, table_name);
+    execute format('drop policy if exists rn_%s_select on public.%I', table_name, table_name);
+    execute format('drop policy if exists rn_%s_write on public.%I', table_name, table_name);
     execute format(
-      'create policy rn_%I_select on public.%I for select to authenticated using (public.rn_has_tenant_access(tenant_id))',
+      'create policy rn_%s_select on public.%I for select to authenticated using (public.rn_has_tenant_access(tenant_id))',
       table_name,
       table_name
     );
     execute format(
-      'create policy rn_%I_write on public.%I for all to authenticated using (public.rn_can_write() and public.rn_has_tenant_access(tenant_id)) with check (public.rn_can_write() and public.rn_has_tenant_access(tenant_id))',
+      'create policy rn_%s_write on public.%I for all to authenticated using (public.rn_can_write() and public.rn_has_tenant_access(tenant_id)) with check (public.rn_can_write() and public.rn_has_tenant_access(tenant_id))',
       table_name,
       table_name
     );

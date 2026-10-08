@@ -2,6 +2,7 @@ export type BriefStatus = 'intake' | 'in_progress' | 'review' | 'delivered' | 'b
 export type PriorityLevel = 'p0_critical' | 'p1_high' | 'p2_medium' | 'p3_low';
 export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 export type JsonObject = { [key: string]: JsonValue };
+import type { PaymentMethod, PaymentProvider } from './payments';
 
 export interface Brief {
   id: string;
@@ -48,10 +49,29 @@ export interface Invoice {
   tenant_id?: string;
   client_id: string;
   client_name?: string;
+  country_code?: string;
   invoice_number: string;
   amount: number;
   currency: string;
   status: 'draft' | 'issued' | 'paid' | 'overdue';
+  payment_method?: PaymentMethod;
+  payment_provider?: PaymentProvider;
+  subtotal?: number;
+  discount_rate?: number;
+  discount_amount?: number;
+  tax_rate?: number;
+  tax_amount?: number;
+  processing_fee?: number;
+  gateway_fee_rate?: number;
+  gateway_fixed_fee?: number;
+  provider_payment_id?: string;
+  provider_reference?: string;
+  local_currency_code?: string;
+  local_equivalent_amount?: number;
+  settlement_status?: 'pending' | 'settled' | 'failed' | 'reconciled';
+  amount_settled?: number;
+  settlement_note?: string;
+  settled_at?: string;
   due_date: string;
   paid_date?: string;
   created_at: string;
@@ -148,6 +168,18 @@ export interface Database {
         Update: Partial<Omit<OnboardingJob, 'id'>>;
         Relationships: [];
       };
+      rn_payment_events: {
+        Row: PaymentEvent;
+        Insert: Omit<PaymentEvent, 'id' | 'created_at' | 'processed_at'>;
+        Update: Partial<Omit<PaymentEvent, 'id'>>;
+        Relationships: [];
+      };
+      rn_payment_accounts: {
+        Row: PaymentAccount;
+        Insert: Omit<PaymentAccount, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<PaymentAccount, 'id'>>;
+        Relationships: [];
+      };
     };
     Views: {};
     Functions: {};
@@ -179,6 +211,33 @@ export interface OnboardingJob {
   attempt_count: number;
   last_error?: string;
   next_attempt_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PaymentEvent {
+  id: string;
+  tenant_id?: string;
+  invoice_id: string;
+  provider: PaymentProvider;
+  provider_event_id: string;
+  event_type: string;
+  status: 'received' | 'processed' | 'failed';
+  payload: JsonObject;
+  created_at: string;
+  processed_at?: string;
+}
+
+export interface PaymentAccount {
+  id: string;
+  provider: PaymentProvider;
+  rail: 'native' | 'swift';
+  currency: string;
+  country?: string;
+  display_name: string;
+  provider_reference?: string;
+  encrypted_instructions?: string;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }

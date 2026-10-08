@@ -49,6 +49,7 @@ export interface Invoice {
   tenant_id?: string;
   client_id: string;
   client_name?: string;
+  client_email?: string;
   country_code?: string;
   invoice_number: string;
   amount: number;

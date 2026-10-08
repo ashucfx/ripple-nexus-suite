@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Badge, Button } from '@rn/brand';
 import { useAuth } from '@rn/auth';
+import { getStoredItem, setStoredItem } from '@rn/db';
 
-interface FeatureFlag {
+export interface FeatureFlag {
   id: string;
   name: string;
   description: string;
@@ -13,30 +14,61 @@ interface FeatureFlag {
   rollout_pct: number;
 }
 
+const DEFAULT_FLAGS: FeatureFlag[] = [
+  { id: 'ff-001', name: 'DISTRIBUTED_QUERY_CACHE', description: 'Multi-region edge query caching layer for sub-millisecond lookups', enabled: true, tier: 'enterprise', rollout_pct: 100 },
+  { id: 'ff-002', name: 'MULTI_REGION_DEPLOY', description: 'One-click multi-cluster deployment to US/EU/AP edge nodes', enabled: true, tier: 'enterprise', rollout_pct: 100 },
+  { id: 'ff-003', name: 'ADVANCED_TELEMETRY', description: 'p99 latency histograms, flame graphs, and distributed tracing', enabled: true, tier: 'growth', rollout_pct: 50 },
+  { id: 'ff-004', name: 'WHITE_LABEL_PORTAL', description: 'Custom tenant domain and cryptographic branding for client portal', enabled: false, tier: 'enterprise', rollout_pct: 0 },
+  { id: 'ff-005', name: 'AUTOMATED_RETAINER', description: 'Auto-generate recurring retainer invoices on scheduled billing cycles', enabled: true, tier: 'all', rollout_pct: 100 },
+];
+
 export const FeatureFlagPanel: React.FC = () => {
   const { role } = useAuth();
-  const [flags, setFlags] = useState<FeatureFlag[]>([
-    { id: 'ff-001', name: 'AI_COPILOT_BETA', description: 'AI-assisted code review suggestions in Forge deliverables', enabled: false, tier: 'enterprise', rollout_pct: 0 },
-    { id: 'ff-002', name: 'MULTI_REGION_DEPLOY', description: 'One-click multi-cluster deployment to US/EU/AP nodes', enabled: true, tier: 'enterprise', rollout_pct: 100 },
-    { id: 'ff-003', name: 'ADVANCED_TELEMETRY', description: 'p99 latency histograms and flame graphs', enabled: true, tier: 'growth', rollout_pct: 50 },
-    { id: 'ff-004', name: 'WHITE_LABEL_PORTAL', description: 'Custom subdomain and branding for client Atlas portal', enabled: false, tier: 'enterprise', rollout_pct: 0 },
-    { id: 'ff-005', name: 'AUTOMATED_RETAINER', description: 'Auto-generate monthly retainer invoices on 1st UTC', enabled: true, tier: 'all', rollout_pct: 100 },
-  ]);
+  const [flags, setFlags] = useState<FeatureFlag[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [newFlagName, setNewFlagName] = useState('');
+  const [newFlagDesc, setNewFlagDesc] = useState('');
+  const [newFlagTier, setNewFlagTier] = useState<'enterprise' | 'growth' | 'all'>('enterprise');
+
+  useEffect(() => {
+    const stored = getStoredItem<FeatureFlag[]>('forge_feature_flags', DEFAULT_FLAGS);
+    setFlags(stored);
+  }, []);
+
+  const saveFlags = (updated: FeatureFlag[]) => {
+    setFlags(updated);
+    setStoredItem('forge_feature_flags', updated);
+  };
 
   const canEdit = role === 'executive_admin' || role === 'operations_lead';
 
   const toggleFlag = (id: string) => {
     if (!canEdit) return;
-    setFlags((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, enabled: !f.enabled } : f))
-    );
+    const updated = flags.map((f) => (f.id === id ? { ...f, enabled: !f.enabled } : f));
+    saveFlags(updated);
   };
 
   const setRollout = (id: string, pct: number) => {
     if (!canEdit) return;
-    setFlags((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, rollout_pct: pct } : f))
-    );
+    const updated = flags.map((f) => (f.id === id ? { ...f, rollout_pct: pct } : f));
+    saveFlags(updated);
+  };
+
+  const handleCreateFlag = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newFlagName.trim()) return;
+    const created: FeatureFlag = {
+      id: `ff-${Date.now()}`,
+      name: newFlagName.trim().toUpperCase().replace(/\s+/g, '_'),
+      description: newFlagDesc.trim() || 'Custom runtime feature flag',
+      enabled: false,
+      tier: newFlagTier,
+      rollout_pct: 0,
+    };
+    saveFlags([created, ...flags]);
+    setNewFlagName('');
+    setNewFlagDesc('');
+    setModalOpen(false);
   };
 
   return (
@@ -49,29 +81,39 @@ export const FeatureFlagPanel: React.FC = () => {
           marginBottom: '1rem',
           borderBottom: '1px solid var(--nexus-border, #1F2633)',
           paddingBottom: '0.75rem',
+          flexWrap: 'wrap',
+          gap: '0.5rem',
         }}
       >
-        <h3
-          style={{
-            fontFamily: 'var(--font-mono, monospace)',
-            fontSize: '0.875rem',
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            color: '#FFFFFF',
-            margin: 0,
-          }}
-        >
-          FEATURE FLAG MATRIX
-        </h3>
-        <span
-          style={{
-            fontFamily: 'var(--font-mono, monospace)',
-            fontSize: '0.625rem',
-            color: '#8A99AD',
-          }}
-        >
-          {flags.filter((f) => f.enabled).length}/{flags.length} ENABLED
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <h3
+            style={{
+              fontFamily: 'var(--font-mono, monospace)',
+              fontSize: '0.875rem',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: '#FFFFFF',
+              margin: 0,
+            }}
+          >
+            FEATURE FLAG MATRIX
+          </h3>
+          <span
+            style={{
+              fontFamily: 'var(--font-mono, monospace)',
+              fontSize: '0.625rem',
+              color: '#8A99AD',
+            }}
+          >
+            {flags.filter((f) => f.enabled).length}/{flags.length} ENABLED
+          </span>
+        </div>
+
+        {canEdit && (
+          <Button variant="secondary" size="sm" onClick={() => setModalOpen(true)}>
+            + NEW FLAG
+          </Button>
+        )}
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -141,7 +183,7 @@ export const FeatureFlagPanel: React.FC = () => {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                   <span style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: '0.5rem', color: '#8A99AD' }}>
-                    ROLLOUT
+                    TRAFFIC ROLLOUT
                   </span>
                   <span style={{ fontFamily: 'var(--font-mono, monospace)', fontSize: '0.5rem', color: '#00D2FF' }}>
                     {flag.rollout_pct}%
@@ -154,7 +196,7 @@ export const FeatureFlagPanel: React.FC = () => {
                   step={10}
                   value={flag.rollout_pct}
                   disabled={!canEdit}
-                  onChange={(e) => setRollout(flag.id, parseInt(e.target.value))}
+                  onChange={(e) => setRollout(flag.id, parseInt(e.target.value, 10))}
                   style={{ width: '100%', accentColor: '#0052FF' }}
                 />
               </div>
@@ -162,6 +204,94 @@ export const FeatureFlagPanel: React.FC = () => {
           </div>
         ))}
       </div>
+
+      {modalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+            backdropFilter: 'blur(6px)',
+            zIndex: 100,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+          }}
+        >
+          <div
+            className="rn-card"
+            style={{
+              maxWidth: '440px',
+              width: '100%',
+              backgroundColor: '#141923',
+              border: '1px solid #1F2633',
+            }}
+          >
+            <h3
+              style={{
+                fontFamily: 'var(--font-mono, monospace)',
+                fontSize: '0.875rem',
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: '#FFFFFF',
+                marginBottom: '1rem',
+              }}
+            >
+              CREATE FEATURE FLAG
+            </h3>
+            <form onSubmit={handleCreateFlag} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.6875rem', color: '#8A99AD', marginBottom: '4px' }}>
+                  FLAG KEY NAME *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. ENABLE_EVENT_STREAM"
+                  value={newFlagName}
+                  onChange={(e) => setNewFlagName(e.target.value)}
+                  className="rn-input"
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.6875rem', color: '#8A99AD', marginBottom: '4px' }}>
+                  DESCRIPTION
+                </label>
+                <input
+                  type="text"
+                  placeholder="Operational purpose of this toggle"
+                  value={newFlagDesc}
+                  onChange={(e) => setNewFlagDesc(e.target.value)}
+                  className="rn-input"
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.6875rem', color: '#8A99AD', marginBottom: '4px' }}>
+                  TIER REQUIREMENT
+                </label>
+                <select
+                  value={newFlagTier}
+                  onChange={(e) => setNewFlagTier(e.target.value as typeof newFlagTier)}
+                  className="rn-input"
+                >
+                  <option value="enterprise">ENTERPRISE ONLY</option>
+                  <option value="growth">GROWTH</option>
+                  <option value="all">ALL TIERS</option>
+                </select>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '0.5rem' }}>
+                <Button variant="ghost" size="sm" onClick={() => setModalOpen(false)}>
+                  CANCEL
+                </Button>
+                <Button variant="primary" size="sm" type="submit">
+                  SAVE FLAG
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </Card>
   );
 };
@@ -171,13 +301,13 @@ export const FeatureFlagPanel: React.FC = () => {
 // ─────────────────────────────────────────────
 
 export const DeploymentHeatmap: React.FC = () => {
-  // Generate 90 days of synthetic deploy data
+  // Generate 90 days of deploy cadence
   const days = Array.from({ length: 90 }, (_, i) => {
     const date = new Date();
     date.setDate(date.getDate() - (89 - i));
     return {
       date,
-      deploys: Math.floor(Math.random() * 6),
+      deploys: (i % 7 === 0 || i % 5 === 0) ? Math.floor((i % 4) + 1) : 0,
       label: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
     };
   });
@@ -214,10 +344,10 @@ export const DeploymentHeatmap: React.FC = () => {
             margin: 0,
           }}
         >
-          DEPLOYMENT HEATMAP (90D)
+          DEPLOYMENT CADENCE (90D)
         </h3>
         <Badge variant="cobalt">
-          {days.reduce((acc, d) => acc + d.deploys, 0)} TOTAL DEPLOYS
+          {days.reduce((acc, d) => acc + d.deploys, 0)} CADENCE CYCLES
         </Badge>
       </div>
 

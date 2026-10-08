@@ -5,3 +5,4 @@ export * from './components/Button';
 export * from './components/Card';
 export * from './components/TelemetryMetric';
 export * from './components/TopNav';
+export * from './components/ErrorState';

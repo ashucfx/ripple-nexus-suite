@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@rn/brand';
-import type { Invoice } from '@rn/db';
+import { calculatePaymentQuote, getPaymentMethodOptions, type Invoice, type PaymentMethod } from '@rn/db';
 
 interface IssueInvoiceModalProps {
   isOpen: boolean;
@@ -19,6 +19,8 @@ export const IssueInvoiceModal: React.FC<IssueInvoiceModalProps> = ({
   const [clientName, setClientName] = useState('Helios Autonomous Labs');
   const [amount, setAmount] = useState<number>(45000);
   const [currency, setCurrency] = useState('USD');
+  const [countryCode, setCountryCode] = useState('US');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('paypal');
   const [dueDate, setDueDate] = useState('2026-10-15');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -28,21 +30,54 @@ export const IssueInvoiceModal: React.FC<IssueInvoiceModalProps> = ({
     e.preventDefault();
     if (!clientId.trim() || amount <= 0) return;
 
-    setIsSubmitting(true);
     const invoiceNum = `INV-RN-${Date.now().toString().slice(-6)}`;
+    const selectedMethod = paymentOptions.find((option) => option.method === paymentMethod);
+    if (!selectedMethod || selectedMethod.availability !== 'available' || !quote) return;
 
-    await onSubmit({
-      client_id: clientId.trim().toUpperCase(),
-      client_name: clientName.trim(),
-      invoice_number: invoiceNum,
-      amount: Number(amount),
-      currency,
-      status: 'issued',
-      due_date: dueDate,
-    });
+    setIsSubmitting(true);
+    try {
+      await onSubmit({
+        client_id: clientId.trim().toUpperCase(),
+        client_name: clientName.trim(),
+        country_code: countryCode,
+        invoice_number: invoiceNum,
+        amount: quote.totalPayable,
+        currency,
+        payment_method: paymentMethod,
+        payment_provider: selectedMethod.provider,
+        subtotal: quote.subtotal,
+        discount_rate: quote.discountRate,
+        discount_amount: quote.discountAmount,
+        tax_rate: quote.taxRate,
+        tax_amount: quote.taxAmount,
+        processing_fee: quote.processingFee,
+        gateway_fee_rate: quote.gatewayFeeRate,
+        gateway_fixed_fee: quote.gatewayFixedFee,
+        settlement_status: 'pending',
+        status: 'issued',
+        due_date: dueDate,
+      });
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-    setIsSubmitting(false);
-    onClose();
+  const paymentOptions = getPaymentMethodOptions(countryCode, currency);
+  const selectedOption = paymentOptions.find((option) => option.method === paymentMethod) || paymentOptions[0];
+  const quote = selectedOption?.availability === 'available' && Number(amount) > 0
+    ? calculatePaymentQuote({
+        subtotal: Number(amount),
+        currency,
+        countryCode,
+        paymentMethod: selectedOption.method,
+      })
+    : null;
+
+  const handleCountryChange = (nextCountryCode: string) => {
+    setCountryCode(nextCountryCode);
+    setCurrency(nextCountryCode === 'IN' ? 'INR' : 'USD');
+    setPaymentMethod(nextCountryCode === 'IN' ? 'razorpay_domestic' : 'paypal');
   };
 
   return (
@@ -176,7 +211,43 @@ export const IssueInvoiceModal: React.FC<IssueInvoiceModalProps> = ({
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div>
+              <label
+                style={{
+                  display: 'block',
+                  fontFamily: 'var(--font-mono, monospace)',
+                  fontSize: '0.6875rem',
+                  letterSpacing: '0.08em',
+                  color: '#8A99AD',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                BILLING COUNTRY
+              </label>
+              <select
+                value={countryCode}
+                onChange={(e) => handleCountryChange(e.target.value)}
+                style={{
+                  width: '100%',
+                  backgroundColor: '#1A212E',
+                  border: '1px solid #1F2633',
+                  padding: '0.65rem 0.85rem',
+                  color: '#FFFFFF',
+                  borderRadius: '4px',
+                  fontFamily: 'var(--font-mono, monospace)',
+                  fontSize: '0.8125rem',
+                }}
+              >
+                <option value="IN">India</option>
+                <option value="US">United States</option>
+                <option value="GB">United Kingdom</option>
+                <option value="AE">United Arab Emirates</option>
+                <option value="SG">Singapore</option>
+                <option value="CA">Canada</option>
+              </select>
+            </div>
+
             <div>
               <label
                 style={{
@@ -236,13 +307,70 @@ export const IssueInvoiceModal: React.FC<IssueInvoiceModalProps> = ({
                   fontSize: '0.8125rem',
                 }}
               >
+                <option value="INR">INR (₹)</option>
                 <option value="USD">USD ($)</option>
                 <option value="EUR">EUR (€)</option>
                 <option value="GBP">GBP (£)</option>
-                <option value="USDC">USDC (Base)</option>
               </select>
             </div>
           </div>
+
+          <div>
+            <label
+              style={{
+                display: 'block',
+                fontFamily: 'var(--font-mono, monospace)',
+                fontSize: '0.6875rem',
+                letterSpacing: '0.08em',
+                color: '#8A99AD',
+                marginBottom: '0.5rem',
+              }}
+            >
+              PAYMENT METHOD
+            </label>
+            <select
+              value={selectedOption?.method || paymentMethod}
+              onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
+              style={{
+                width: '100%',
+                backgroundColor: '#1A212E',
+                border: '1px solid #1F2633',
+                padding: '0.65rem 0.85rem',
+                color: '#FFFFFF',
+                borderRadius: '4px',
+                fontFamily: 'var(--font-mono, monospace)',
+                fontSize: '0.8125rem',
+              }}
+            >
+              {paymentOptions.map((option) => (
+                <option key={option.method} value={option.method} disabled={option.availability !== 'available'}>
+                  {option.label}{option.availability === 'planned' ? ' (PLANNED)' : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {quote && (
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                gap: '0.5rem 1rem',
+                padding: '0.85rem',
+                backgroundColor: '#0A0D12',
+                border: '1px solid #1F2633',
+                borderRadius: '4px',
+                fontFamily: 'var(--font-mono, monospace)',
+                fontSize: '0.6875rem',
+                color: '#8A99AD',
+              }}
+            >
+              <span>SUBTOTAL</span><strong style={{ color: '#FFFFFF' }}>{quote.subtotal.toFixed(2)} {currency}</strong>
+              <span>GST / TAX ({(quote.taxRate * 100).toFixed(1)}%)</span><strong style={{ color: '#FFFFFF' }}>{quote.taxAmount.toFixed(2)} {currency}</strong>
+              <span>PROCESSING RECOVERY</span><strong style={{ color: '#FFFFFF' }}>{quote.processingFee.toFixed(2)} {currency}</strong>
+              <span>TOTAL PAYABLE</span><strong style={{ color: '#00D2FF' }}>{quote.totalPayable.toFixed(2)} {currency}</strong>
+            </div>
+          )}
 
           <div>
             <label

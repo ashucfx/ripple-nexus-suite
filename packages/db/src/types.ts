@@ -132,6 +132,11 @@ export interface Database {
         Insert: Omit<VaultSecretReference, 'id' | 'created_at'>;
         Update: Partial<Omit<VaultSecretReference, 'id'>>;
       };
+      rn_onboarding_jobs: {
+        Row: OnboardingJob;
+        Insert: Omit<OnboardingJob, 'id' | 'correlation_id' | 'created_at' | 'updated_at' | 'attempt_count' | 'status' | 'next_attempt_at'>;
+        Update: Partial<Omit<OnboardingJob, 'id'>>;
+      };
     };
   };
 }
@@ -145,4 +150,22 @@ export interface VaultSecretReference {
   last_rotated_at?: string;
   status: 'active' | 'rotation_due' | 'revoked';
   created_at: string;
+}
+
+export type OnboardingJobStatus = 'queued' | 'provisioning' | 'ready' | 'failed';
+
+export interface OnboardingJob {
+  id: string;
+  external_key: string;
+  idempotency_key: string;
+  tenant_id?: string;
+  requested_by: string;
+  correlation_id: string;
+  payload: Record<string, unknown>;
+  status: OnboardingJobStatus;
+  attempt_count: number;
+  last_error?: string;
+  next_attempt_at: string;
+  created_at: string;
+  updated_at: string;
 }
